@@ -1,7 +1,7 @@
 import React from 'react';
 import { Loader } from './Loader';
 import { Comment } from '../types/Comment';
-import { NewCommentForm } from './NewCommentForm';
+import { NewCommentForm, NewCommentFormProps } from './NewCommentForm';
 import { Post } from '../types/Post';
 
 interface PostDetailsProps {
@@ -9,7 +9,10 @@ interface PostDetailsProps {
   comments: Comment[];
   isCommentLoading: boolean;
   isCommentError: boolean;
+  showCommentForm: boolean;
+  setShowCommentForm: (showCommnetForm: boolean) => void;
   deleteComment: (comment: Comment) => void;
+  newCommentFormProps: NewCommentFormProps;
 }
 
 export const PostDetails: React.FC<PostDetailsProps> = ({
@@ -17,7 +20,10 @@ export const PostDetails: React.FC<PostDetailsProps> = ({
   comments,
   isCommentLoading,
   isCommentError,
+  showCommentForm,
+  setShowCommentForm,
   deleteComment,
+  newCommentFormProps,
 }) => {
   return (
     <div className="content" data-cy="PostDetails">
@@ -43,45 +49,52 @@ export const PostDetails: React.FC<PostDetailsProps> = ({
               No comments yet
             </p>
           )}
-
-          <p className="title is-4">Comments:</p>
-          {comments.map(comment => (
-            <article
-              key={comment.id}
-              className="message is-small"
-              data-cy="Comment"
-            >
-              <div className="message-header">
-                <a href={`mailto:${comment.email}`} data-cy="CommentAuthor">
-                  {comment.name}
-                </a>
-                <button
-                  data-cy="CommentDelete"
-                  type="button"
-                  className="delete is-small"
-                  aria-label="delete"
-                  onClick={() => deleteComment(comment)}
+          {!isCommentLoading && (
+            <>
+              <p className="title is-4">Comments:</p>
+              {comments.map(comment => (
+                <article
+                  key={comment.id}
+                  className="message is-small"
+                  data-cy="Comment"
                 >
-                  delete button
+                  <div className="message-header">
+                    <a href={`mailto:${comment.email}`} data-cy="CommentAuthor">
+                      {comment.name}
+                    </a>
+                    <button
+                      data-cy="CommentDelete"
+                      type="button"
+                      className="delete is-small"
+                      aria-label="delete"
+                      onClick={() => deleteComment(comment)}
+                    >
+                      delete button
+                    </button>
+                  </div>
+
+                  <div className="message-body" data-cy="CommentBody">
+                    {comment.body}
+                  </div>
+                </article>
+              ))}
+              {!showCommentForm && (
+                <button
+                  data-cy="WriteCommentButton"
+                  type="button"
+                  className="button is-link"
+                  onClick={() => setShowCommentForm(true)}
+                >
+                  Write a comment
                 </button>
-              </div>
-
-              <div className="message-body" data-cy="CommentBody">
-                {comment.body}
-              </div>
-            </article>
-          ))}
-
-          <button
-            data-cy="WriteCommentButton"
-            type="button"
-            className="button is-link"
-          >
-            Write a comment
-          </button>
+              )}
+            </>
+          )}
         </div>
 
-        <NewCommentForm />
+        {!isCommentLoading && showCommentForm && (
+          <NewCommentForm {...newCommentFormProps} />
+        )}
       </div>
     </div>
   );

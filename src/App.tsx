@@ -18,7 +18,20 @@ import { MessageType } from './types/MessageType';
 import { MESSAGES } from './const';
 import { NotificationMessage } from './types/NotificationMessage';
 import { Comment } from './types/Comment';
-import { deleteComment, getPostComments } from './Api/Comments';
+import {
+  createPostComment,
+  deleteComment,
+  getPostComments,
+} from './Api/Comments';
+import { NewCommentFormProps } from './components/NewCommentForm';
+
+const newCommnet = {
+  id: 0,
+  postId: 0,
+  name: '',
+  email: '',
+  body: '',
+};
 
 export const App = () => {
   const [message, setMessage] = useState<NotificationMessage | null>(null);
@@ -29,6 +42,9 @@ export const App = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isCommentLoading, setIsCommentLoading] = useState(false);
   const [isCommentError, setIsCommentError] = useState(false);
+  const [showCommentForm, setShowCommentForm] = useState(false);
+  const [isNewCommentLoading, setIsNewCommentLoading] = useState(false);
+  const [newCommentValues, setNewCommentValues] = useState<Comment>(newCommnet);
 
   useEffect(() => {
     getUsers().then(setUsers);
@@ -63,7 +79,11 @@ export const App = () => {
       getPostComments(selectedPost.id)
         .then(setComments)
         .catch(() => setIsCommentError(true))
-        .finally(() => setIsCommentLoading(false));
+        .finally(() => {
+          setShowCommentForm(false);
+          setNewCommentValues({ ...newCommnet });
+          setIsCommentLoading(false);
+        });
     }
   }, [selectedPost]);
 
@@ -83,6 +103,31 @@ export const App = () => {
         setComments([...comments]);
       })
       .finally(() => setIsCommentLoading(false));
+  };
+
+  const onAddNewComment = () => {
+    if (!selectedPost?.id) {
+      return;
+    }
+
+    newCommentValues.postId = selectedPost.id;
+    setIsNewCommentLoading(true);
+    createPostComment(newCommentValues)
+      .then((serverComment: Comment) => {
+        setComments([...comments, serverComment]);
+        setNewCommentValues({ ...newCommnet });
+      })
+      .catch(() => {
+        setIsCommentError(true);
+      })
+      .finally(() => setIsNewCommentLoading(false));
+  };
+
+  const newCommentFormProps: NewCommentFormProps = {
+    isNewCommentLoading,
+    newCommentValues,
+    setNewCommentValues,
+    onAddNewComment,
   };
 
   return (
@@ -129,7 +174,10 @@ export const App = () => {
                   comments={comments}
                   isCommentLoading={isCommentLoading}
                   isCommentError={isCommentError}
+                  showCommentForm={showCommentForm}
+                  setShowCommentForm={setShowCommentForm}
                   deleteComment={onDeleteComment}
+                  newCommentFormProps={newCommentFormProps}
                 />
               </div>
             )}
