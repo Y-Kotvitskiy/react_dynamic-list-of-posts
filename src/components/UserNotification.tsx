@@ -1,10 +1,17 @@
-export const UserNotification = () => (
-  <>
-    <div className="notification is-danger" data-cy="PostsLoadingError">
-      Something went wrong!
+import { NotificationMessage } from '../types/NotificationMessage';
+
+interface UserNotificationProps {
+  message: NotificationMessage;
+}
+
+export const UserNotification: React.FC<UserNotificationProps> = ({
+  message,
+}) => {
+  const { text, type } = message;
+
+  return (
+    <div className={`notification ${type}`} data-cy="PostsLoadingError">
+      {text}
     </div>
-    <div className="notification is-warning" data-cy="NoPostsYet">
-      No posts yet
-    </div>
-  </>
-);
+  );
+};

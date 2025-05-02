@@ -12,14 +12,37 @@ import { UserNotification } from './components/UserNotification';
 import { useEffect, useState } from 'react';
 import { User } from './types/User';
 import { getUsers } from './Api/Users';
+import { Post } from './types/Post';
+import { getUserPosts } from './Api/Posts';
+import { MessageType } from './types/MessageType';
+import { MESSAGES } from './const';
+import { NotificationMessage } from './types/NotificationMessage';
 
 export const App = () => {
+  const [message, setMessage] = useState<NotificationMessage | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [user, setUser] = useState<User | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [selectedPostId, setSelectedPostId] = useState<Post['id'] | null>(null);
 
   useEffect(() => {
     getUsers().then(setUsers);
   }, []);
+
+  useEffect(() => {
+    if (user?.id) {
+      getUserPosts(user.id).then(serverPosts => {
+        setPosts(serverPosts);
+        if (serverPosts.length > 0) {
+          setMessage(null);
+        } else {
+          setMessage({ text: MESSAGES.NO_POSTS, type: MessageType.Warning });
+        }
+      });
+    } else {
+      setPosts([]);
+    }
+  }, [user]);
 
   return (
     <main className="section">
@@ -32,12 +55,18 @@ export const App = () => {
               </div>
 
               <div className="block" data-cy="MainContent">
-                <p data-cy="NoSelectedUser">No user selected</p>
+                {!user && <p data-cy="NoSelectedUser">No user selected</p>}
 
                 {false && <Loader />}
 
-                {false && <UserNotification />}
-                {false && <PostsList />}
+                {message && <UserNotification message={message} />}
+                {posts.length > 0 && (
+                  <PostsList
+                    posts={posts}
+                    selectedPostId={selectedPostId}
+                    onSelect={setSelectedPostId}
+                  />
+                )}
               </div>
             </div>
           </div>
