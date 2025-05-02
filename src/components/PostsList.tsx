@@ -4,13 +4,13 @@ import { Post } from '../types/Post';
 
 interface PostsListProps {
   posts: Post[];
-  selectedPostId: Post['id'] | null;
-  onSelect: (postId: Post['id'] | null) => void;
+  selectedPost: Post | null;
+  onSelect: (post: Post | null) => void;
 }
 
 export const PostsList: React.FC<PostsListProps> = ({
   posts,
-  selectedPostId,
+  selectedPost,
   onSelect,
 }) => (
   <div data-cy="PostsList">
@@ -27,22 +27,26 @@ export const PostsList: React.FC<PostsListProps> = ({
       </thead>
 
       <tbody>
-        {posts.map(({ id, title }: Post) => (
-          <tr key={id} data-cy="Post">
-            <td data-cy="PostId">{id}</td>
+        {posts.map((post: Post) => (
+          <tr key={post.id} data-cy="Post">
+            <td data-cy="PostId">{post.id}</td>
 
-            <td data-cy="PostTitle">{title}</td>
+            <td data-cy="PostTitle">{post.title}</td>
 
             <td className="has-text-right is-vcentered">
               <button
                 type="button"
                 data-cy="PostButton"
                 className={classNames('button', 'is-link', {
-                  'is-light': id !== selectedPostId,
+                  'is-light': post.id !== selectedPost?.id,
                 })}
-                onClick={() => onSelect(id === selectedPostId ? null : id)}
+                onClick={() =>
+                  onSelect(
+                    selectedPost && post.id == selectedPost.id ? null : post,
+                  )
+                }
               >
-                {id === selectedPostId ? 'Close' : 'Open'}
+                {selectedPost && post.id === selectedPost.id ? 'Close' : 'Open'}
               </button>
             </td>
           </tr>

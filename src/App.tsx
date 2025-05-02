@@ -17,13 +17,18 @@ import { getUserPosts } from './Api/Posts';
 import { MessageType } from './types/MessageType';
 import { MESSAGES } from './const';
 import { NotificationMessage } from './types/NotificationMessage';
+import { Comment } from './types/Comment';
+import { deleteComment, getPostComments } from './Api/Comments';
 
 export const App = () => {
   const [message, setMessage] = useState<NotificationMessage | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [selectedPostId, setSelectedPostId] = useState<Post['id'] | null>(null);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [isCommentLoading, setIsCommentLoading] = useState(false);
+  const [isCommentError, setIsCommentError] = useState(false);
 
   useEffect(() => {
     getUsers().then(setUsers);
@@ -31,6 +36,7 @@ export const App = () => {
 
   useEffect(() => {
     if (user?.id) {
+      setSelectedPost(null);
       getUserPosts(user.id).then(serverPosts => {
         setPosts(serverPosts);
         if (serverPosts.length > 0) {
@@ -43,6 +49,41 @@ export const App = () => {
       setPosts([]);
     }
   }, [user]);
+
+  useEffect(() => {
+    setIsCommentError(false);
+    if (!selectedPost) {
+      setComments([]);
+
+      return;
+    }
+
+    setIsCommentLoading(true);
+    if (selectedPost) {
+      getPostComments(selectedPost.id)
+        .then(setComments)
+        .catch(() => setIsCommentError(true))
+        .finally(() => setIsCommentLoading(false));
+    }
+  }, [selectedPost]);
+
+  const onDeleteComment = (deletedComment: Comment) => {
+    setIsCommentLoading(true);
+    const deleteIndex = comments.indexOf(deletedComment);
+
+    setComments(
+      comments.filter(
+        currentComment => deletedComment.id !== currentComment.id,
+      ),
+    );
+    deleteComment(deletedComment.id)
+      .catch(() => {
+        setIsCommentError(true);
+        comments.splice(deleteIndex, 0, deletedComment);
+        setComments([...comments]);
+      })
+      .finally(() => setIsCommentLoading(false));
+  };
 
   return (
     <main className="section">
@@ -63,8 +104,8 @@ export const App = () => {
                 {posts.length > 0 && (
                   <PostsList
                     posts={posts}
-                    selectedPostId={selectedPostId}
-                    onSelect={setSelectedPostId}
+                    selectedPost={selectedPost}
+                    onSelect={setSelectedPost}
                   />
                 )}
               </div>
@@ -81,9 +122,15 @@ export const App = () => {
               'Sidebar--open',
             )}
           >
-            {false && (
+            {selectedPost && (
               <div className="tile is-child box is-success ">
-                <PostDetails />
+                <PostDetails
+                  post={selectedPost}
+                  comments={comments}
+                  isCommentLoading={isCommentLoading}
+                  isCommentError={isCommentError}
+                  deleteComment={onDeleteComment}
+                />
               </div>
             )}
           </div>
