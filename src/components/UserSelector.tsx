@@ -25,7 +25,10 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
   };
 
   return (
-    <div data-cy="UserSelector" className="dropdown is-active">
+    <div
+      data-cy="UserSelector"
+      className={classNames('dropdown', { 'is-active': showList })}
+    >
       <div className="dropdown-trigger">
         <button
           type="button"
@@ -33,6 +36,17 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
           aria-haspopup="true"
           aria-controls="dropdown-menu"
           onClick={() => setShowList(!showList)}
+          onBlur={event => {
+            if (!showList) {
+              return;
+            }
+
+            const focusedElement = event.relatedTarget;
+
+            if (!focusedElement?.matches('a.dropdown-item')) {
+              setShowList(false);
+            }
+          }}
         >
           <span>{user ? user.name : 'Choose a user'}</span>
 
@@ -41,24 +55,22 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
           </span>
         </button>
       </div>
-      {showList && (
-        <div className="dropdown-menu" id="dropdown-menu" role="menu">
-          <div className="dropdown-content">
-            {users.map(listUser => (
-              <a
-                key={listUser.id}
-                href={`#user-${listUser.id}`}
-                className={classNames('dropdown-item', {
-                  'is-active': listUser.id === user?.id,
-                })}
-                onClick={event => handleUserClick(event, listUser)}
-              >
-                {listUser.name}
-              </a>
-            ))}
-          </div>
+      <div className="dropdown-menu" id="dropdown-menu" role="menu">
+        <div className="dropdown-content">
+          {users.map(listUser => (
+            <a
+              key={listUser.id}
+              href={`#user-${listUser.id}`}
+              className={classNames('dropdown-item', {
+                'is-active': listUser.id === user?.id,
+              })}
+              onClick={event => handleUserClick(event, listUser)}
+            >
+              {listUser.name}
+            </a>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 };
