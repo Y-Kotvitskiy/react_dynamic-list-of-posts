@@ -44,12 +44,12 @@ export const PostDetails: React.FC<PostDetailsProps> = ({
             </div>
           )}
 
-          {!isCommentLoading && comments.length === 0 && (
+          {!isCommentError && !isCommentLoading && comments.length === 0 && (
             <p className="title is-4" data-cy="NoCommentsMessage">
               No comments yet
             </p>
           )}
-          {!isCommentLoading && (
+          {!isCommentError && !isCommentLoading && (
             <>
               <p className="title is-4">Comments:</p>
               {comments.map(comment => (

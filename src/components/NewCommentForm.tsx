@@ -7,21 +7,25 @@ export interface NewCommentFormProps {
   newCommentValues: Comment;
   setNewCommentValues: Dispatch<React.SetStateAction<Comment>>;
   onAddNewComment: () => void;
+  onClearComment: () => void;
 }
 
 type ErrorFields = Partial<{ [K in keyof Comment]: boolean }>;
+
+const noErrorState = {
+  name: false,
+  email: false,
+  body: false,
+};
 
 export const NewCommentForm: React.FC<NewCommentFormProps> = ({
   isNewCommentLoading,
   newCommentValues,
   setNewCommentValues,
   onAddNewComment,
+  onClearComment,
 }) => {
-  const [errorFields, setErrorFields] = useState<ErrorFields>({
-    name: false,
-    email: false,
-    body: false,
-  });
+  const [errorFields, setErrorFields] = useState<ErrorFields>(noErrorState);
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -42,6 +46,11 @@ export const NewCommentForm: React.FC<NewCommentFormProps> = ({
     if (!hasErrors) {
       onAddNewComment();
     }
+  };
+
+  const resetHandler = () => {
+    setErrorFields(noErrorState);
+    onClearComment();
   };
 
   return (
@@ -167,7 +176,11 @@ export const NewCommentForm: React.FC<NewCommentFormProps> = ({
 
         <div className="control">
           {/* eslint-disable-next-line react/button-has-type */}
-          <button type="reset" className="button is-link is-light">
+          <button
+            type="reset"
+            className="button is-link is-light"
+            onClick={resetHandler}
+          >
             Clear
           </button>
         </div>

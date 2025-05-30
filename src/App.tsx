@@ -135,7 +135,12 @@ export const App = () => {
     createPostComment(newCommentValues)
       .then((serverComment: Comment) => {
         setComments([...comments, serverComment]);
-        setNewCommentValues({ ...newCommnet });
+        setNewCommentValues({
+          ...newCommentValues,
+          id: 0,
+          postId: 0,
+          body: '',
+        });
       })
       .catch(() => {
         setIsCommentError(true);
@@ -143,11 +148,14 @@ export const App = () => {
       .finally(() => setIsNewCommentLoading(false));
   };
 
+  const onClearComment = () => setNewCommentValues(newCommnet);
+
   const newCommentFormProps: NewCommentFormProps = {
     isNewCommentLoading,
     newCommentValues,
     setNewCommentValues,
     onAddNewComment,
+    onClearComment,
   };
 
   return (
