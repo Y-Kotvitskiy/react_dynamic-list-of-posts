@@ -7,10 +7,10 @@ interface UserNotificationProps {
 export const UserNotification: React.FC<UserNotificationProps> = ({
   message,
 }) => {
-  const { text, type } = message;
+  const { text, type, cyData } = message;
 
   return (
-    <div className={`notification ${type}`} data-cy="PostsLoadingError">
+    <div className={`notification ${type}`} data-cy={cyData}>
       {text}
     </div>
   );

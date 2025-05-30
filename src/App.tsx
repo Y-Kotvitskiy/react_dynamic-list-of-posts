@@ -24,6 +24,7 @@ import {
   getPostComments,
 } from './Api/Comments';
 import { NewCommentFormProps } from './components/NewCommentForm';
+import { CyData } from './types/CyData';
 
 const newCommnet = {
   id: 0,
@@ -37,6 +38,7 @@ export const App = () => {
   const [message, setMessage] = useState<NotificationMessage | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [user, setUser] = useState<User | null>(null);
+  const [isPostLoading, setIsPostLoading] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -52,21 +54,39 @@ export const App = () => {
 
   useEffect(() => {
     if (user?.id) {
+      setMessage(null);
       setSelectedPost(null);
-      getUserPosts(user.id).then(serverPosts => {
-        setPosts(serverPosts);
-        if (serverPosts.length > 0) {
-          setMessage(null);
-        } else {
-          setMessage({ text: MESSAGES.NO_POSTS, type: MessageType.Warning });
-        }
-      });
+      setIsPostLoading(true);
+      getUserPosts(user.id)
+        .then(serverPosts => {
+          setPosts(serverPosts);
+          if (serverPosts.length > 0) {
+            setMessage(null);
+          } else {
+            setMessage({
+              text: MESSAGES.NO_POSTS,
+              type: MessageType.Warning,
+              cyData: CyData.NoPostsYet,
+            });
+          }
+        })
+        .catch(err => {
+          // eslint-disable-next-line no-console
+          console.error(err);
+          setMessage({
+            text: MESSAGES.ERROR,
+            type: MessageType.Danger,
+            cyData: CyData.PostsLoadingError,
+          });
+        })
+        .finally(() => setIsPostLoading(false));
     } else {
       setPosts([]);
     }
   }, [user]);
 
   useEffect(() => {
+    setMessage(null);
     setIsCommentError(false);
     if (!selectedPost) {
       setComments([]);
@@ -143,10 +163,10 @@ export const App = () => {
               <div className="block" data-cy="MainContent">
                 {!user && <p data-cy="NoSelectedUser">No user selected</p>}
 
-                {false && <Loader />}
+                {isPostLoading && <Loader />}
 
                 {message && <UserNotification message={message} />}
-                {posts.length > 0 && (
+                {!isPostLoading && posts.length > 0 && (
                   <PostsList
                     posts={posts}
                     selectedPost={selectedPost}
@@ -164,7 +184,7 @@ export const App = () => {
               'is-parent',
               'is-8-desktop',
               'Sidebar',
-              'Sidebar--open',
+              { 'Sidebar--open': selectedPost },
             )}
           >
             {selectedPost && (
