@@ -10,7 +10,7 @@ interface PostDetailsProps {
   isCommentLoading: boolean;
   isCommentError: boolean;
   showCommentForm: boolean;
-  setShowCommentForm: (showCommnetForm: boolean) => void;
+  setShowCommentForm: (showCommentForm: boolean) => void;
   deleteComment: (comment: Comment) => void;
   newCommentFormProps: NewCommentFormProps;
 }

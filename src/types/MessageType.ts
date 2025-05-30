@@ -1,4 +1,4 @@
 export enum MessageType {
-  Danger = 'is-dange',
+  Danger = 'is-danger',
   Warning = 'is-warning',
 }
